@@ -158,21 +158,22 @@ def scan_text(text: str) -> ScanResult:
     findings: list[Finding] = []
     for pattern, category, severity, reason in _RULES:
         for m in pattern.finditer(text):
-            # Downgrade a bare URL to informational unless it is
-            # suspicious on its own (host hint) or paired with a
-            # credential/exfiltration finding, which the proxy checks
-            # separately via `is_poisoned` on the combined result.
-            sev = severity
+            # A bare URL is only a finding when its host looks
+            # suspicious. Clean servers (e.g. the official filesystem
+            # server) put documentation URLs in their tool descriptions,
+            # and flagging every one of them spams the audit log with
+            # risk-20 "flagged" events for tools that are actually clean.
             if category == "external_url":
                 host = m.group(0).lower()
                 if not any(h in host for h in _SUSPICIOUS_URL_HOSTS):
-                    sev = 2
+                    continue
+                severity = 7
             findings.append(
                 Finding(
                     category=category,
                     pattern=pattern.pattern,
                     matched=m.group(0)[:200],
-                    severity=sev,
+                    severity=severity,
                     reason=reason,
                 )
             )

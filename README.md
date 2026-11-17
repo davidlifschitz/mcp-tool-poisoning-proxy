@@ -99,9 +99,31 @@ policy:
 
 ```bash
 pytest -q
-# 27 tests: detectors, policy, proxy (incl. end-to-end handler tests
-# against the poisoned tool list)
+# 28 tests: detectors, policy, proxy, plus a real-MCP integration test
+# (tests/test_real_mcp.py) that runs the official Python SDK client
+# against a FastMCP server through the proxy
 ```
+
+## Verified against real MCP servers (Nov 17, 2026)
+
+Not just the hand-rolled demo servers. Two live checks, both passed:
+
+1. **Official Python MCP SDK** — `ClientSession` + `FastMCP` server,
+   through the proxy: initialize succeeds, the poisoned tool is
+   quarantined from `tools/list`, clean calls work, `/etc/passwd` and
+   the exfiltration tool are blocked with a `McpError` before ever
+   reaching the server (the server log shows only the 2 allowed calls).
+2. **Official npx filesystem server**
+   (`@modelcontextprotocol/server-filesystem /tmp`) — all 16 tools pass
+   through, `read_file` / `list_directory` work, `/etc/passwd` is
+   blocked by the proxy. One gap found in this check and fixed: clean
+   servers put documentation URLs in their tool descriptions, and the
+   detector was flagging every one of them (risk 20, audit spam). Bare
+   URLs are now ignored unless the host looks suspicious.
+
+Not yet verified: Claude Desktop / the MCP Inspector UI, and the
+Streamable HTTP transport (this proxy is stdio only). Those are the
+honest limits — see Threat model below.
 
 ## Threat model — and limits
 

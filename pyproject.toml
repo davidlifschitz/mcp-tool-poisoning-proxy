@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "mcp>=1.0,<2"]  # mcp is only for tests/test_real_mcp.py
 
 [project.scripts]
 mcp-guard = "mcp_guard.cli:main"
