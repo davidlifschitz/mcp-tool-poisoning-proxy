@@ -1,0 +1,28 @@
+# Default mcp-guard policy.
+# Deny-by-default for the dangerous classes; allow the demo workspace.
+policy:
+  mode: enforce
+  # If set, only these tools may run. Leave null to allow any tool that
+  # is not explicitly blocked.
+  allowed_tools: null
+  blocked_tools:
+    - exfiltrate_credentials
+    - dump_secrets
+  # Filesystem paths tools may touch. Anything else is rejected,
+  # and /etc/passwd, ~/.ssh, ~/.aws etc. are blocked outright.
+  allowed_paths:
+    - /tmp
+    - ~/workspace
+  # If set, only these hosts may be contacted. Leave null to allow any
+  # host that is not blocked / private / metadata.
+  allowed_hosts: null
+  blocked_hosts:
+    - evil.example.com
+  max_arg_size: 100000
+  max_result_size: 1000000
+  rate_limit_per_minute: 60
+  tools:
+    read_file:
+      allowed_args: [path]
+    get_weather:
+      allowed_args: [city]
